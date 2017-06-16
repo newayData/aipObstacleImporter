@@ -234,8 +234,6 @@ Module Module1
 
 
 
-
-
     End Sub
 
     Dim wordList As New List(Of String)
