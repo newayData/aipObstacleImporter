@@ -148,7 +148,7 @@ Module Module1
 
             Dim latitudeString As String = latMatch.Value
 
-            Dim latitude As Double = lat2Double(latitudeString)
+            Dim latitude As Double = lat2double(latitudeString)
 
             ' ========================
             ' longitude
@@ -161,7 +161,7 @@ Module Module1
 
             Dim longitudeString As String = lonMatch.Value
 
-            Dim longitude As Double = lon2Double(latitudeString)
+            Dim longitude As Double = lon2double(latitudeString)
 
             If type = "" Then
                 Console.ForegroundColor = ConsoleColor.Yellow
@@ -175,7 +175,7 @@ Module Module1
             Dim elevation As Double = 0
             Dim height As Double = 0
             Dim state As Short = 0
-            Dim patternElev As String = "([1-9][0-9][0-9][0-9]|[1-9][0-9][0-9])"
+            Dim patternElev As String = "( [1-9][0-9][0-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9]|[1-9])"
             For Each item In elementSplitPost
                 ' Instantiate the regular expression object.
                 Dim elevex As Regex = New Regex(patternElev, RegexOptions.IgnoreCase)
