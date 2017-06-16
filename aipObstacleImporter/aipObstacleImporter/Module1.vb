@@ -175,7 +175,7 @@ Module Module1
             Dim elevation As Double = 0
             Dim height As Double = 0
             Dim state As Short = 0
-            Dim patternElev As String = "( [1-9][0-9][0-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9]|[1-9])"
+            Dim patternElev As String = "([1-9][0-9][0-9][0-9]|[1-9][0-9][0-9])"
             For Each item In elementSplitPost
                 ' Instantiate the regular expression object.
                 Dim elevex As Regex = New Regex(patternElev, RegexOptions.IgnoreCase)
