@@ -51,6 +51,20 @@ Module Module1
         Return sb.ToString()
     End Function
 
+    Structure obstStruct
+        Dim pos As DoublePointStruct
+        Dim rawpos As String
+        Dim elevation As Long
+        Dim height As Long
+    End Structure
+    Structure groupStruct
+        Dim name As String
+        Dim type As String
+        Dim element As List(Of obstStruct)
+    End Structure
+
+    Dim resGroups As New List(Of groupStruct)
+
 
     Function processText(rawtext As String) As Task
 
@@ -76,12 +90,28 @@ Module Module1
         Dim textLine = rawtext.Split(vbLf)
 
 
+        Dim obstacleGroup As New groupStruct
+        obstacleGroup.element = New List(Of obstStruct)
+
         Dim coordPairs_lst As New List(Of String)
         Dim elevation As Double = 0
         Dim height As Double = 0
 
+        Dim oldStat As String = "newItem"
+        Dim clineCnt As Short = 0
+        Dim nextline As String = ""
         For Each cline In textLine
             Dim pattern As String = "[0-8][0-9] [0-5][0-9] [0-9][0-9][NS] [0-3][0-8][0-9] [0-5][0-9] [0-9][0-9][EW] "
+
+            Try
+                nextline = ""
+                For i As Short = clineCnt + 1 To clineCnt + 1
+                    nextline &= " " & textLine(i)
+                Next
+            Catch ex As Exception
+            End Try
+
+            clineCnt += 1
 
             ' Instantiate the regular expression object.
             Dim r As Regex = New Regex(pattern, RegexOptions.IgnoreCase)
@@ -99,17 +129,23 @@ Module Module1
                 If m.Index = 0 Then     ' this means additional coords
                     mode = "coords"
                     coordPairs_lst.Add(m.Value)
-                    cline = cline.Replace(m.Value, "")
+                    cline = cline.Replace(m.Value, "### ")
 
                 Else
                     mode = "newItem"
 
 
-                    cline = cline.Replace(m.Value, "")
+                    cline = cline.Replace(m.Value, "### ")
 
                     ' get the name
-                    Dim rw = cline.Clone
-                    rw = rw.replace(" / ", "\").split(" ")
+                    ' remove all after the coordinates
+                    Dim rq As String = ""
+                    For Each item In cline
+                        If item = "#" Then Exit For
+                        rq &= item
+                    Next
+
+                    Dim rw = rq.Split(" ")
                     Dim rwClean As New List(Of String)
                     For Each item In rw
                         If item.ToString.Contains("\") = False Then
@@ -127,7 +163,7 @@ Module Module1
 
                         Dim dist = GetGreatCircleDistance_ConstEarthRadiusInNm(nepp, newpoint)
                         If dist <> 0 Then
-                            If dist < 1 Then pointInGroup = True
+                            If dist < 2 Then pointInGroup = True
                         End If
                     Next
 
@@ -153,28 +189,125 @@ Module Module1
                 ' elevation  / height
                 ' ========================
 
+                If name.Contains("Gössnitzalmen") Then
+                    Dim kdsfs = 3
+                End If
+
+
+
+                Dim elementSplitPost = (cline).ToString.Split(" ")
+                Dim nextLineRead As Boolean = False
+
+againWithNextLine:
                 Dim state As Short = 0
-                Dim patternElev As String = "( [1-9][0-9][0-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9]|[1-9])"
-                Dim elementSplitPost = cline.ToString.Replace(" / ", " /").Split(" ")
-                For Each item In elementSplitPost
-                    If item.Contains("/") = False Then
-                        ' Instantiate the regular expression object.
-                        Dim elevex As Regex = New Regex(patternElev, RegexOptions.IgnoreCase)
-                        Dim elevMatch As Match = elevex.Match(item)
+                height = 0
+                Dim heightSpotted As Boolean = False
 
-                        If elevMatch.Success Then
-                            If state = 0 Then
-                                elevation = elevMatch.Value
-                                state = 1
-                            Else
-                                height = elevMatch.Value
-                                Exit For
-                            End If
-                        End If
+                Dim cnt As Short = 0
+
+                ' remove all entries before the coordinates
+                Dim coordsFound As Boolean = False
+                For i As Short = 0 To elementSplitPost.Count - 1
+                    If elementSplitPost(i).Contains("###") Then coordsFound = True
+
+                    If Not coordsFound Then
+                        elementSplitPost(i) = "xx"
                     End If
-
-
                 Next
+
+                ' if read nextline: also remove coordinates and values before, to not confuse
+
+                If nextLineRead Then
+
+                    Try
+                        Dim qr = r.Match(nextline)
+
+                        If qr.Value <> "" Then
+                            nextline = cline.Replace(qr.Value, "### ")
+
+                            ' find chars
+                            Dim removeChars As String = ""
+                            For chas As Short = 0 To nextline.Length - 1
+                                If nextline(chas) = "#" Then Exit For
+                                removeChars &= nextline(chas)
+                            Next
+                            nextline = nextline.Replace(removeChars, "")
+
+                        End If
+
+                        elementSplitPost = (cline & " " & nextline).Split(" ")
+
+
+
+                    Catch ex As Exception
+
+                    End Try
+
+
+                End If
+
+
+
+
+                For Each item In elementSplitPost
+
+                    ' ignore the first values
+                    Try
+
+
+                        If item.Contains("/") = False And elementSplitPost(cnt + 1).Contains("/") Then
+                            ' Instantiate the regular expression object.
+                            Try
+                                Dim s As Long = item
+
+                                If state = 0 Then
+                                    elevation = item
+                                    state = 1
+
+
+                                Else
+
+
+                                    If item <> elevation Then
+                                        height = item
+                                        heightSpotted = True
+                                        Exit For
+                                    End If
+
+
+
+
+                                End If
+
+                            Catch ex As Exception
+                                If state = 1 Then height = -1
+                            End Try
+
+
+                        End If
+
+                        cnt += 1
+                    Catch ex As Exception
+                        height = -1
+                    End Try
+                Next
+
+                ' if no height found: add nextline
+                If heightSpotted = False And nextLineRead = False Then
+
+                    Console.WriteLine("height Not identified, spot Next line.. >> " & name)
+                    nextLineRead = True
+                    GoTo againWithNextLine
+                End If
+
+
+                If (oldStat = "coords" And mode = "newItem") Or (mode = "newItem" And oldStat = "newItem") Then
+                    resGroups.Add(obstacleGroup)
+
+
+                    obstacleGroup = New groupStruct
+                    obstacleGroup.element = New List(Of obstStruct)
+                End If
 
 
                 Select Case mode
@@ -182,38 +315,80 @@ Module Module1
                         If coordPairs_lst.Contains(m.Value) = False Then coordPairs_lst.Add(m.Value)
                         cline = cline.Replace(m.Value, "")
 
+                        Dim ob As New obstStruct
+                        ob.elevation = elevation
+                        ob.height = height
+                        ob.rawpos = m.Value
+                        ob.pos = coord2double(m.Value)
+                        obstacleGroup.element.Add(ob)
 
 
                     Case "newItem"
 
-                        coordPairs_lst.Clear()
-                        Console.WriteLine("--------------------")
-                        Console.WriteLine(name)
+                        ' add pre one
+                        Dim ob As New obstStruct
+                        ob.elevation = elevation
+                        ob.height = height
+                        ob.pos = coord2double(m.Value)
+                        ob.rawpos = m.Value
+                        obstacleGroup.element.Add(ob)
+                        obstacleGroup.name = name
+                        obstacleGroup.type = type
 
+                        coordPairs_lst.Clear()
 
                         If coordPairs_lst.Contains(m.Value) = False Then coordPairs_lst.Add(m.Value)
 
                         cline = cline.Replace(m.Value, "")
 
-
-
                 End Select
 
-                Console.WriteLine(m.Value & "  elev: " & elevation & "     height: " & height)
-                Console.ReadKey()
-
-
+                oldStat = mode
                 m = r.Match(cline)
+
+                Console.Write(".")
             Loop
-
-
-
-
         Next
 
+        For o As Short = 0 To resGroups.Count - 1
+            Try
 
 
+                ' highest values in height
+                Dim maxHeight As Long = 0
+                For i As Short = 0 To resGroups(o).element.Count - 1
+                    If resGroups(o).element(i).height > maxHeight Then maxHeight = resGroups(o).element(i).height
+                Next
 
+                ' set max height
+                For i As Short = 0 To resGroups(o).element.Count - 1
+
+                    If resGroups(o).element(i).height = -1 Then
+
+                        Console.WriteLine("!added max height, as no unique entry in source document! >> " & resGroups(o).name)
+                        Dim sd = resGroups(o).element(i)
+                        sd.height = maxHeight
+                        resGroups(o).element(i) = sd
+                    End If
+                Next
+
+            Catch ex As Exception
+
+            End Try
+        Next
+
+        For Each item In resGroups
+            Console.WriteLine("----------------------")
+            Console.WriteLine(item.name & " " & item.type)
+
+            For Each els In item.element
+                Console.WriteLine("points: " & els.rawpos & "  elev: " & els.elevation & "  height:" & els.height)
+            Next
+
+            Console.ReadKey()
+        Next
+
+        Dim k = 3
 
 
 
