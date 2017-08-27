@@ -3,9 +3,25 @@ Imports iTextSharp.text.pdf
 Imports iTextSharp.text.pdf.parser
 Imports Microsoft.SmallBasic.Library
 
+Imports DotSpatial.Data
+Imports DotSpatial.Topology
+
 Module Module1
 
     Dim Version As String = "1.0"
+
+
+    Dim parseResult As New List(Of obstacleStruct)
+    Structure obstacleStruct
+        Dim name As String
+        Dim type As String
+        Dim elevation As Short
+        Dim lat As Double
+        Dim lon As Double
+        Dim marked As Boolean
+        Dim lighted As Boolean
+        Dim height As Short
+    End Structure
 
     ' header
     Sub writeHeader()
@@ -155,13 +171,28 @@ Module Module1
             ' ========================
             Dim patternLon As String = "[EW] [0-3][0-8][0-9] [0-5][0-9] [0-9][0-9]"
 
+
+
             ' Instantiate the regular expression object.
             Dim lonex As Regex = New Regex(patternLon, RegexOptions.IgnoreCase)
             Dim lonMatch As Match = lonex.Match(elementStringPost)
 
             Dim longitudeString As String = lonMatch.Value
 
-            Dim longitude As Double = lon2double(latitudeString)
+            Dim longitude As Double = lon2double(longitudeString)
+
+
+            Try
+                ' parse Lat/Lon
+                ' in DFS Germany always N E
+                If latitudeString.Contains("N") = False Then
+                    Console.Write("ERR: latitude not in northern Hemisphere! " & latitudeString)
+                End If
+                If longitudeString.Contains("E") = False Then
+                    Console.Write("ERR: latitude not in eastern Hemisphere! " & longitudeString)
+                End If
+            Catch ex As Exception
+            End Try
 
             If type = "" Then
                 Console.ForegroundColor = ConsoleColor.Yellow
@@ -225,6 +256,21 @@ Module Module1
 
             Console.WriteLine((name.PadLeft(40)) & "-> " & type.PadLeft(30) & " -> " & latitudeString & " | " & longitudeString & " -> elev: " & elevation.ToString.PadLeft(5) & " -> height: " & height.ToString.PadLeft(5) & " ->  lighted: " & lighted & " -> marked: " & marked)
 
+            Dim newObs As obstacleStruct
+            newObs.name = name
+            newObs.type = type
+            newObs.lat = latitude
+            newObs.lon = longitude
+            newObs.height = height
+            newObs.elevation = elevation
+            newObs.marked = marked
+            newObs.lighted = lighted
+            parseResult.Add(newObs)
+
+
+
+
+
             ' text after the found element
 
             m = m.NextMatch()
@@ -286,7 +332,56 @@ Module Module1
 
         writeHeader()
 
-        ParsePdfText("testfiles\ED_baden.pdf")
+        ParsePdfText("C:\Users\ovord\Desktop\ED_ENR_5_4_Bayern_en_2017-08-17.pdf")
+
+        createShapefile()
     End Sub
 
+
+    Sub createShapefile()
+        Dim fs As New FeatureSet(FeatureType.Line)
+        fs.DataTable.Columns.Add(New DataColumn("LFNDNR", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("GZ", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("ART", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("OBJNAME", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("BUNDESLAND", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("LAGE", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("H_MAX", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("H_TAL", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("N_BERG", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("ANZ_STUETZ", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("BAHN_LAENG", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("KENNZEICHN", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("DATUM_MELD", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("DATUM_ABBA", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("FARBE", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("STANDORT", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("BEZIRK", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("STATUS", Type.GetType("System.String")))
+
+
+
+        Dim id = 0
+
+        For Each cli In parseResult
+            Dim cl As New Coordinate(cli.lon, cli.lat)
+
+
+            Dim ffa As IFeature = fs.AddFeature(New Point(cl))
+            ffa.DataRow.AcceptChanges()
+
+            ffa.DataRow("LFNDNR") = id
+            ffa.DataRow("ART") = cli.type
+            ffa.DataRow("OBJNAME") = cli.name
+            ffa.DataRow("H_MAX") = cli.height
+            ffa.DataRow("H_TAL") = cli.elevation
+            ffa.DataRow("H_MAX") = cli.height
+            ffa.DataRow("DATUM_MELD") = "1970-01-01 00:00:00"
+            ffa.DataRow("DATUM_ABBA") = ""
+            ffa.DataRow("STANDORT") = cli.name
+            ffa.DataRow("STATUS") = "n"
+            id += 1
+        Next
+        fs.SaveAs("C:\Users\ovord\Desktop\test3.shp", True)
+    End Sub
 End Module
