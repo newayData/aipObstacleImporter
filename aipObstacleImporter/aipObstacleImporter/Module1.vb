@@ -148,7 +148,7 @@ Module Module1
 
             Dim latitudeString As String = latMatch.Value
 
-            Dim latitude As Double = lat2Double(latitudeString)
+            Dim latitude As Double = lat2double(latitudeString)
 
             ' ========================
             ' longitude
@@ -161,7 +161,7 @@ Module Module1
 
             Dim longitudeString As String = lonMatch.Value
 
-            Dim longitude As Double = lon2Double(latitudeString)
+            Dim longitude As Double = lon2double(latitudeString)
 
             If type = "" Then
                 Console.ForegroundColor = ConsoleColor.Yellow
