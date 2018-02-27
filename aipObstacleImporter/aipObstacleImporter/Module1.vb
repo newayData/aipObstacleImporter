@@ -3,9 +3,26 @@ Imports iTextSharp.text.pdf
 Imports iTextSharp.text.pdf.parser
 Imports Microsoft.SmallBasic.Library
 
+Imports DotSpatial.Data
+Imports DotSpatial.Topology
+Imports System.IO
+
 Module Module1
 
     Dim Version As String = "1.0"
+
+
+    Dim parseResult As New List(Of obstacleStruct)
+    Structure obstacleStruct
+        Dim name As String
+        Dim type As String
+        Dim elevation As Short
+        Dim lat As Double
+        Dim lon As Double
+        Dim marked As Boolean
+        Dim lighted As Boolean
+        Dim height As String
+    End Structure
 
     ' header
     Sub writeHeader()
@@ -51,8 +68,6 @@ Module Module1
     End Function
 
     Sub processText(rawtext As String)
-        Dim k = 3
-
         Dim pattern As String = "[NS] [0-8][0-9] [0-5][0-9] [0-9][0-9]"
 
         ' Instantiate the regular expression object.
@@ -155,13 +170,28 @@ Module Module1
             ' ========================
             Dim patternLon As String = "[EW] [0-3][0-8][0-9] [0-5][0-9] [0-9][0-9]"
 
+
+
             ' Instantiate the regular expression object.
             Dim lonex As Regex = New Regex(patternLon, RegexOptions.IgnoreCase)
             Dim lonMatch As Match = lonex.Match(elementStringPost)
 
             Dim longitudeString As String = lonMatch.Value
 
-            Dim longitude As Double = lon2double(latitudeString)
+            Dim longitude As Double = lon2double(longitudeString)
+
+
+            Try
+                ' parse Lat/Lon
+                ' in DFS Germany always N E
+                If latitudeString.Contains("N") = False Then
+                    Console.Write("ERR: latitude not in northern Hemisphere! " & latitudeString)
+                End If
+                If longitudeString.Contains("E") = False Then
+                    Console.Write("ERR: latitude not in eastern Hemisphere! " & longitudeString)
+                End If
+            Catch ex As Exception
+            End Try
 
             If type = "" Then
                 Console.ForegroundColor = ConsoleColor.Yellow
@@ -223,7 +253,32 @@ Module Module1
                 End If
             Next
 
-            Console.WriteLine((name.PadLeft(40)) & "-> " & type.PadLeft(30) & " -> " & latitudeString & " | " & longitudeString & " -> elev: " & elevation.ToString.PadLeft(5) & " -> height: " & height.ToString.PadLeft(5) & " ->  lighted: " & lighted & " -> marked: " & marked)
+
+            ' cast type
+            Dim nType As String = "TOWER"
+            If type.Contains("TOWER") Then nType = "TOWER"
+            If type.Contains("Wind") Then nType = "WINDTURBINE"
+            If type.Contains("antenna") Then nType = "TOWER"
+            If type.Contains("plant") Then nType = "CHIMNEY"
+            If type.Contains("Crane") Then nType = "CRANE"
+            If type.Contains("mast") Then nType = "MAST"
+
+
+            Dim newObs As obstacleStruct
+            newObs.name = name
+            newObs.type = nType
+            newObs.lat = latitude
+            newObs.lon = longitude
+            newObs.height = height & " FT"
+            newObs.elevation = elevation
+            newObs.marked = marked
+            newObs.lighted = lighted
+            parseResult.Add(newObs)
+
+            Console.WriteLine((name.PadLeft(40)) & "-> " & nType.PadLeft(30) & " -> " & latitudeString & " | " & longitudeString & " -> elev: " & elevation.ToString.PadLeft(5) & " -> height: " & height.ToString.PadLeft(5) & " ->  lighted: " & lighted & " -> marked: " & marked)
+
+
+
 
             ' text after the found element
 
@@ -231,8 +286,6 @@ Module Module1
 
             '  Console.ReadKey()
         Loop
-
-
 
 
 
@@ -286,9 +339,66 @@ Module Module1
 
     Sub Main()
 
+
+        Dim dir = getParameter("dir")
+
         writeHeader()
 
-        ParsePdfText("testfiles\ED_baden.pdf")
+
+        Dim fileEntries As String() = Directory.GetFiles(dir)
+        ' Process the list of files found in the directory.
+        Dim fileName As String
+        For Each fileName In fileEntries
+            If fileName.Contains("5_4") And fileName.Contains(".pdf") Then
+
+                Console.WriteLine("parsing document: " & fileName)
+                Console.WriteLine("------------------------------------------------->")
+                ParsePdfText(fileName)
+
+                ' temp
+                'Exit For
+            End If
+        Next
+
+        createShapefile()
     End Sub
 
+
+    Sub createShapefile()
+        Dim fs As New FeatureSet(FeatureType.Line)
+        fs.DataTable.Columns.Add(New DataColumn("id", Type.GetType("System.Int32")))
+
+        fs.DataTable.Columns.Add(New DataColumn("type", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("name", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("height", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("elevation", Type.GetType("System.Int32")))
+
+        Dim id = 0
+
+        For Each cli In parseResult
+            Dim cl As New Coordinate(cli.lon, cli.lat)
+
+
+            Dim ffa As IFeature = fs.AddFeature(New Point(cl))
+            ffa.DataRow.AcceptChanges()
+
+            ffa.DataRow("id") = id
+            ffa.DataRow("type") = cli.type
+            ffa.DataRow("name") = cli.name
+            ffa.DataRow("height") = cli.height
+            ffa.DataRow("elevation") = cli.elevation
+
+            id += 1
+        Next
+        fs.SaveAs("DFS_obstacles.shp", True)
+    End Sub
+
+    Dim sArgs_CLASS As String()
+    Function getParameter(name As String)
+        sArgs_CLASS = Environment.GetCommandLineArgs()
+        For i As Short = 0 To sArgs_CLASS.Length - 2
+            If "-" & name = sArgs_CLASS(i) Then Return sArgs_CLASS(i + 1)
+        Next
+        Return Nothing
+    End Function
 End Module
