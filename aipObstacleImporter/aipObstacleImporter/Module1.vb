@@ -1,4 +1,5 @@
-﻿Imports System.Text.RegularExpressions
+﻿Imports Microsoft.SmallBasic.Library
+Imports System.Text.RegularExpressions
 Imports iTextSharp.text.pdf
 Imports iTextSharp.text.pdf.parser
 
@@ -6,7 +7,7 @@ Imports iTextSharp.text.pdf.parser
 Imports DotSpatial.Data
 Imports DotSpatial.Topology
 Imports System.IO
-Imports Microsoft.SmallBasic.Library
+
 
 Module Module1
 
@@ -292,6 +293,7 @@ Module Module1
         If wordList.Contains(item) Then
             Return True
         Else
+
             If CStr(Dictionary.GetDefinition(item)) <> "" Then
                 wordList.Add(item)
                 Return True
