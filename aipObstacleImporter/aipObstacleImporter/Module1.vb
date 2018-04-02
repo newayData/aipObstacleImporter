@@ -1,10 +1,12 @@
 ﻿Imports System.Text.RegularExpressions
 Imports iTextSharp.text.pdf
 Imports iTextSharp.text.pdf.parser
-Imports Microsoft.SmallBasic.Library
+
 
 Imports DotSpatial.Data
 Imports DotSpatial.Topology
+Imports System.IO
+Imports Microsoft.SmallBasic.Library
 
 Module Module1
 
@@ -67,7 +69,6 @@ Module Module1
     End Function
 
     Sub processText(rawtext As String)
-        Dim k = 3
 
         Dim pattern As String = "[NS] [0-8][0-9] [0-5][0-9] [0-9][0-9]"
 
@@ -332,9 +333,27 @@ Module Module1
 
         writeHeader()
 
-        ParsePdfText("C:\Users\ovord\Desktop\ED_ENR_5_4_Bayern_en_2017-08-17.pdf")
 
-        createShapefile()
+        Try
+            Dim fileEntries As String() = Directory.GetFiles("aipDocs")
+            ' Process the list of files found in the directory.
+            Dim fileName As String
+            For Each fileName In fileEntries
+                If fileName.EndsWith(".pdf") Then
+
+                    Console.WriteLine("process file: " & fileName)
+                    Console.WriteLine("-------------------------------------------------->")
+                    ParsePdfText(fileName)
+                End If
+
+
+            Next fileName
+
+            createShapefile()
+        Catch ex As Exception
+            Console.WriteLine("ERR: " & ex.Message)
+        End Try
+
     End Sub
 
 
@@ -382,7 +401,23 @@ Module Module1
             ffa.DataRow("STATUS") = "n"
             id += 1
         Next
-        fs.SaveAs("C:\Users\ovord\Desktop\test3.shp", True)
+        fs.SaveAs("out/aipObstacleConverter_dfs.shp", True)
+
+        ' write feature code file
+        Dim file As System.IO.StreamWriter
+        file = My.Computer.FileSystem.OpenTextFileWriter("out\featureCodes_dfs.txt", True)
+
+
+        file.WriteLine("[Appearance]")
+        file.WriteLine("FeatureClass=*linien*wgs84*,310")
+        file.WriteLine("FeatureClass=DFS_obstacles*,type=TOWER,311")
+        file.WriteLine("FeatureClass=DFS_obstacles*,type=WINDTURBINE,312")
+        file.WriteLine("FeatureClass=DFS_obstacles*,type=MAST,313")
+        file.WriteLine("FeatureClass=DFS_obstacles*,type=CRANE,314")
+        file.WriteLine("[Label]")
+        file.WriteLine("FeatureClass=DFS_obstacles*,height")
+
+        file.Close()
 
 
     End Sub
