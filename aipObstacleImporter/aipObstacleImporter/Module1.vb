@@ -391,224 +391,6 @@ againWithNextLine:
         Next
 
 
-        'Dim m As Match = r.Match(rawtext)
-        'Dim matchcount As Integer = 0
-        'Do While m.Success
-        '    Dim targetAddress = m.Index
-        '    Dim PreBufferLength As Short = 100
-        '    Dim PostBufferLength As Short = 100
-        '    If targetAddress < PreBufferLength Then PreBufferLength = targetAddress
-        '    If rawtext.Length < targetAddress + PostBufferLength Then PostBufferLength = rawtext - targetAddress
-
-        '    ' text before the found element
-        '    Dim elementStringPre = rawtext.Substring(targetAddress - PreBufferLength, PreBufferLength)
-        '    Dim spChar As Char() = {vbLf}
-        '    Dim elementSplitPre = elementStringPre.Split(spChar).ToList
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        '    elementSplitPre.Reverse()
-
-        '    ' text after the found element
-        '    Dim elementStringPost = rawtext.Substring(targetAddress, PostBufferLength)
-        '    Dim elementSplitPost = elementStringPost.Split(" ").ToList
-
-
-
-
-
-
-
-
-
-
-
-
-
-        ' ========================
-        ' get obstacle type
-        '' ========================
-        'Dim type_lst As New List(Of String)
-        '    Dim type As String = ""
-        '    Dim counter As Short = -100
-
-        '    Dim ignoreListe As New List(Of String)
-
-        '    Dim matches As New List(Of String)
-        '    For Each item In elementSplitPre
-        '        matches.Add(item)
-        '        ' find the first usefule word
-        '        Dim p As String = "\b[A-Za-z]{4,}\b"
-
-        '        ' Instantiate the regular expression object.
-        '        Dim s As Regex = New Regex(p, RegexOptions.IgnoreCase)
-
-        '        Dim q As Match = s.Match(item)
-
-        '        ' use the second word found...
-        '        If q.Success Then
-        '            Dim definition = checkWord(item)
-        '            If definition Then
-
-        '                ' A string is returned if the word exists in the dictionary
-        '                'Console.WriteLine(CStr(definition))
-
-        '                type_lst.Add(item)
-        '                counter = 1
-        '            End If
-
-        '            counter += 1
-        '            If counter > 3 Then Exit For
-        '            ignoreListe.Add(item)
-
-        '        End If
-        '    Next
-
-        '    type_lst.Reverse()
-        '    For Each t In type_lst
-        '        type &= " " & t
-        '    Next
-
-        '    ' ========================
-        '    ' get obstacle name
-        '    ' ========================
-        '    ' look until a new line is found
-        '    Dim name_lst As New List(Of String)
-        '    Dim name As String = ""
-        '    For Each item In elementSplitPre
-        '        If item <> "" And ignoreListe.Contains(item) = False Then
-        '            ' find the first usefule word
-        '            Dim p As String = "\b[A-Za-z]{4,}\b"
-
-        '            ' Instantiate the regular expression object.
-        '            Dim s As Regex = New Regex(p, RegexOptions.IgnoreCase)
-
-        '            Dim q As Match = s.Match(item)
-
-        '            ' use the second word found...
-        '            If q.Success Then
-
-        '                name_lst.Add(item)
-
-        '            End If
-        '        End If
-        '    Next
-
-        '    Dim wordCnt = 0
-        '    For Each item In name_lst
-        '        name &= " " & item
-        '        wordCnt +=1
-
-        '        If wordCnt = 1 Then Exit For
-        '    Next
-
-
-        '    '' ========================
-        '    '' latitude
-        '    '' ========================
-        '    Dim patternLat As String = "[NS] [0-8][0-9] [0-5][0-9] [0-9][0-9]"
-
-        '    '' Instantiate the regular expression object.
-        '    Dim latex As Regex = New Regex(patternLat, RegexOptions.IgnoreCase)
-        '    Dim latMatch As Match = latex.Match(elementStringPost)
-
-        '    Dim latitudeString As String = latMatch.Value
-
-        '    'Dim latitude As Double = lat2Double(latitudeString)
-
-        '    '' ========================
-        '    '' longitude
-        '    '' ========================
-        '    Dim patternLon As String = "[EW] [0-3][0-8][0-9] [0-5][0-9] [0-9][0-9]"
-
-        '    '' Instantiate the regular expression object.
-        '    Dim lonex As Regex = New Regex(patternLon, RegexOptions.IgnoreCase)
-        '    Dim lonMatch As Match = lonex.Match(elementStringPost)
-
-        '    Dim longitudeString As String = lonMatch.Value
-
-        '    'Dim longitude As Double = lon2Double(latitudeString)
-
-        '    'If type = "" Then
-        '    '    Console.ForegroundColor = ConsoleColor.Yellow
-        '    '    Console.WriteLine("WARN: not found type! " & name)
-        '    '    Console.ResetColor()
-        '    'End If
-
-        '    '' ========================
-        '    '' elevation  / height
-        '    '' ========================
-        '    Dim elevation As Double = 0
-        '    Dim height As Double = 0
-        '    'Dim state As Short = 0
-        '    'Dim patternElev As String = "([1-9][0-9][0-9][0-9]|[1-9][0-9][0-9])"
-        '    'For Each item In elementSplitPost
-        '    '    ' Instantiate the regular expression object.
-        '    '    Dim elevex As Regex = New Regex(patternElev, RegexOptions.IgnoreCase)
-        '    '    Dim elevMatch As Match = elevex.Match(item)
-
-        '    '    If elevMatch.Success Then
-        '    '        If state = 0 Then
-        '    '            elevation = elevMatch.Value
-        '    '            state = 1
-        '    '        Else
-        '    '            height = elevMatch.Value
-        '    '            Exit For
-        '    '        End If
-        '    '    End If
-        '    'Next
-
-
-
-        '    'If elevation = 0 Or height = 0 Then
-        '    '    Console.ForegroundColor = ConsoleColor.Yellow
-        '    '    Console.WriteLine("WARN: elevation or height not found! " & name)
-        '    '    Console.ResetColor()
-        '    'End If
-
-
-        '    '' ========================
-        '    '' lighted  / marked
-        '    '' ========================
-        '    Dim lighted As Boolean = False
-        '    Dim marked As Boolean = False
-        '    'Dim state2 As Short = 0
-        '    'For Each item In elementSplitPost
-        '    '    If item.Contains("yes") Or item.Contains("no") Then
-        '    '        If state2 = 0 Then
-        '    '            If item.Contains("yes") Then
-        '    '                lighted = True
-        '    '            End If
-        '    '            state2 = 1
-        '    '        Else
-        '    '            If item.Contains("yes") Then
-        '    '                marked = True
-        '    '                Exit For
-        '    '            End If
-        '    '        End If
-        '    '    End If
-        '    'Next
-
-        '    Console.WriteLine((name.PadLeft(40)) & "-> " & type.PadLeft(30) & " -> " & latitudeString & " | " & longitudeString & " -> elev: " & elevation.ToString.PadLeft(5) & " -> height: " & height.ToString.PadLeft(5) & " ->  lighted: " & lighted & " -> marked: " & marked)
-
-        '    ' text after the found element
-
-        '    m = m.NextMatch()
-
-        '    '  Console.ReadKey()
-        '  Loop
-
 
 
         Return Nothing
@@ -720,25 +502,12 @@ againWithNextLine:
         End If
 
         Dim fs As New FeatureSet(FeatureType.Line)
-        fs.DataTable.Columns.Add(New DataColumn("LFNDNR", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("GZ", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("ART", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("OBJNAME", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("BUNDESLAND", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("LAGE", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("H_MAX", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("H_TAL", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("N_BERG", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("ANZ_STUETZ", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("BAHN_LAENG", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("KENNZEICHN", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("DATUM_MELD", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("DATUM_ABBA", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("FARBE", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("STANDORT", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("BEZIRK", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("STATUS", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("ID", Type.GetType("System.Int32")))
 
+        fs.DataTable.Columns.Add(New DataColumn("TYPE", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("NAME", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("HEIGHT", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("ELEVATION", Type.GetType("System.Int32")))
 
 
         Dim id = 0
@@ -751,21 +520,39 @@ againWithNextLine:
                 Dim ffa As IFeature = fs.AddFeature(New Point(cl))
                 ffa.DataRow.AcceptChanges()
 
-                ffa.DataRow("LFNDNR") = id
-                ffa.DataRow("ART") = cli.type
-                ffa.DataRow("OBJNAME") = cli.name
-                ffa.DataRow("H_MAX") = el.height
-                ffa.DataRow("H_TAL") = el.elevation
-                ffa.DataRow("H_MAX") = el.height
-                ffa.DataRow("DATUM_MELD") = "1970-01-01 00:00:00"
-                ffa.DataRow("DATUM_ABBA") = ""
-                ffa.DataRow("STANDORT") = cli.name
-                ffa.DataRow("STATUS") = "n"
+                ' cast type
+                Dim casetType = "TOWER"
+                Dim tags = cli.name & cli.type
+
+                If cli.type = "" Then
+
+                    If tags.ToLower.Contains("mast") Then
+                        casetType = "MAST"
+                    End If
+
+                    If tags.ToLower.Contains("wind") Then
+                        casetType = "WINDTURBINE"
+                    End If
+                    If tags.ToLower.Contains("crane") Then
+                        casetType = "CRANE"
+                    End If
+                    If tags.ToLower.Contains("chimney") Then
+                        casetType = "CHIMNEY"
+                    End If
+                End If
+
+
+                ffa.DataRow("ID") = id
+                ffa.DataRow("TYPE") = casetType
+                ffa.DataRow("HEIGHT") = el.height
+                ffa.DataRow("ELEVATION") = el.elevation
+                ffa.DataRow("NAME") = cli.name
+
                 id += 1
             Next
 
         Next
-        fs.SaveAs("out/aipObstacleConverter_acg.shp", True)
+        fs.SaveAs("out/obstacle.shp", True)
 
         ' write feature code file
         Dim file As System.IO.StreamWriter
@@ -774,13 +561,13 @@ againWithNextLine:
 
         file.WriteLine("[Appearance]")
 
-        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=CHIMNEY,300")
-        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=TOWER,311")
-        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=WINDTURBINE,312")
-        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=MAST,313")
-        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=CRANE,314")
+        file.WriteLine("FeatureClass=obstacle*,type=CHIMNEY,300")
+        file.WriteLine("FeatureClass=obstacle*,type=TOWER,311")
+        file.WriteLine("FeatureClass=obstacle*,type=WINDTURBINE,312")
+        file.WriteLine("FeatureClass=obstacle*,type=MAST,313")
+        file.WriteLine("FeatureClass=obstacle*,type=CRANE,314")
         file.WriteLine("[Label]")
-        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,height")
+        file.WriteLine("FeatureClass=obstacle*,height")
 
         file.Close()
 
