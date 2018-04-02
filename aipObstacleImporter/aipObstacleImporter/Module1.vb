@@ -416,7 +416,7 @@ Module Module1
 
 
         file.WriteLine("[Appearance]")
-        file.WriteLine("FeatureClass=*linien*wgs84*,310")
+        file.WriteLine("FeatureClass=DFS_obstacles*,type=CHIMNEY,310")
         file.WriteLine("FeatureClass=DFS_obstacles*,type=TOWER,311")
         file.WriteLine("FeatureClass=DFS_obstacles*,type=WINDTURBINE,312")
         file.WriteLine("FeatureClass=DFS_obstacles*,type=MAST,313")
