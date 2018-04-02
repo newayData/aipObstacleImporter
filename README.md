@@ -17,5 +17,5 @@ no parameter is needed, but folder in root called "aipDocs", with a list of all 
 The docs are organized in states. 
 
 # Output
-a euronav featurecode file will be generated, needed for conversion in the **directors /out** which is in root.
+a euronav featurecode file will be generated, needed for conversion in the **directors /out** which is in root in addition to the shapefiles created with dotSpatial libs.
 
