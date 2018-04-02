@@ -360,69 +360,79 @@ Module Module1
 
 
     Sub createShapefile()
+
         ' create out folder
         If System.IO.Directory.Exists("\out") = False Then
             System.IO.Directory.CreateDirectory("\out")
         End If
 
         Dim fs As New FeatureSet(FeatureType.Line)
-        fs.DataTable.Columns.Add(New DataColumn("LFNDNR", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("GZ", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("ART", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("OBJNAME", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("BUNDESLAND", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("LAGE", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("H_MAX", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("H_TAL", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("N_BERG", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("ANZ_STUETZ", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("BAHN_LAENG", Type.GetType("System.Int32")))
-        fs.DataTable.Columns.Add(New DataColumn("KENNZEICHN", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("DATUM_MELD", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("DATUM_ABBA", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("FARBE", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("STANDORT", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("BEZIRK", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("STATUS", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("ID", Type.GetType("System.Int32")))
 
+        fs.DataTable.Columns.Add(New DataColumn("TYPE", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("NAME", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("HEIGHT", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("ELEVATION", Type.GetType("System.Int32")))
 
 
         Dim id = 0
 
         For Each cli In parseResult
+
             Dim cl As New Coordinate(cli.lon, cli.lat)
 
 
             Dim ffa As IFeature = fs.AddFeature(New Point(cl))
             ffa.DataRow.AcceptChanges()
 
-            ffa.DataRow("LFNDNR") = id
-            ffa.DataRow("ART") = cli.type
-            ffa.DataRow("OBJNAME") = cli.name
-            ffa.DataRow("H_MAX") = cli.height
-            ffa.DataRow("H_TAL") = cli.elevation
-            ffa.DataRow("H_MAX") = cli.height
-            ffa.DataRow("DATUM_MELD") = "1970-01-01 00:00:00"
-            ffa.DataRow("DATUM_ABBA") = ""
-            ffa.DataRow("STANDORT") = cli.name
-            ffa.DataRow("STATUS") = "n"
-            id += 1
+            ' cast type
+            Dim casetType = "TOWER"
+            Dim tags = cli.name & cli.type
+
+
+
+            If tags.ToLower.Contains("mast") Or tags.ToLower.Contains("antenna") Then
+                casetType = "MAST"
+            End If
+
+            If tags.ToLower.Contains("wind") Then
+                    casetType = "WINDTURBINE"
+                End If
+                If tags.ToLower.Contains("crane") Then
+                    casetType = "CRANE"
+                End If
+                If tags.ToLower.Contains("chimney") Or tags.Contains("plant") Then
+                    casetType = "CHIMNEY"
+                End If
+
+
+
+            ffa.DataRow("ID") = id
+                ffa.DataRow("TYPE") = casetType
+            ffa.DataRow("HEIGHT") = cli.height
+            ffa.DataRow("ELEVATION") = cli.elevation
+            ffa.DataRow("NAME") = cli.name
+
+                id += 1
+
+
         Next
-        fs.SaveAs("out/aipObstacleConverter_dfs.shp", True)
+        fs.SaveAs("out/obstacle.shp", True)
 
         ' write feature code file
         Dim file As System.IO.StreamWriter
-        file = My.Computer.FileSystem.OpenTextFileWriter("out/featureCodes.txt", True)
+        file = My.Computer.FileSystem.OpenTextFileWriter("out/featureCodes.txt", False)
 
 
         file.WriteLine("[Appearance]")
-        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=CHIMNEY,310")
-        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=TOWER,311")
-        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=WINDTURBINE,312")
-        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=MAST,313")
-        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=CRANE,314")
+
+        file.WriteLine("FeatureClass=obstacle*,type=CHIMNEY,300")
+        file.WriteLine("FeatureClass=obstacle*,type=TOWER,311")
+        file.WriteLine("FeatureClass=obstacle*,type=WINDTURBINE,312")
+        file.WriteLine("FeatureClass=obstacle*,type=MAST,313")
+        file.WriteLine("FeatureClass=obstacle*,type=CRANE,314")
         file.WriteLine("[Label]")
-        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,height")
+        file.WriteLine("FeatureClass=obstacle*,height")
 
         file.Close()
 
