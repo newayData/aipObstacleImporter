@@ -412,17 +412,17 @@ Module Module1
 
         ' write feature code file
         Dim file As System.IO.StreamWriter
-        file = My.Computer.FileSystem.OpenTextFileWriter("out/featureCodes_dfs.txt", True)
+        file = My.Computer.FileSystem.OpenTextFileWriter("out/featureCodes.txt", True)
 
 
         file.WriteLine("[Appearance]")
-        file.WriteLine("FeatureClass=DFS_obstacles*,type=CHIMNEY,310")
-        file.WriteLine("FeatureClass=DFS_obstacles*,type=TOWER,311")
-        file.WriteLine("FeatureClass=DFS_obstacles*,type=WINDTURBINE,312")
-        file.WriteLine("FeatureClass=DFS_obstacles*,type=MAST,313")
-        file.WriteLine("FeatureClass=DFS_obstacles*,type=CRANE,314")
+        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=CHIMNEY,310")
+        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=TOWER,311")
+        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=WINDTURBINE,312")
+        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=MAST,313")
+        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,type=CRANE,314")
         file.WriteLine("[Label]")
-        file.WriteLine("FeatureClass=DFS_obstacles*,height")
+        file.WriteLine("FeatureClass=aipObstacleConverter_dfs*,height")
 
         file.Close()
 
