@@ -358,6 +358,11 @@ Module Module1
 
 
     Sub createShapefile()
+        ' create out folder
+        If System.IO.Directory.Exists("\out") = False Then
+            System.IO.Directory.CreateDirectory("\out")
+        End If
+
         Dim fs As New FeatureSet(FeatureType.Line)
         fs.DataTable.Columns.Add(New DataColumn("LFNDNR", Type.GetType("System.Int32")))
         fs.DataTable.Columns.Add(New DataColumn("GZ", Type.GetType("System.Int32")))
@@ -405,7 +410,7 @@ Module Module1
 
         ' write feature code file
         Dim file As System.IO.StreamWriter
-        file = My.Computer.FileSystem.OpenTextFileWriter("out\featureCodes_dfs.txt", True)
+        file = My.Computer.FileSystem.OpenTextFileWriter("out/featureCodes_dfs.txt", True)
 
 
         file.WriteLine("[Appearance]")
