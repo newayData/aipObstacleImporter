@@ -1,5 +1,7 @@
 ﻿Imports System.IO
 Imports System.Text.RegularExpressions
+Imports DotSpatial.Data
+Imports DotSpatial.Topology
 Imports iTextSharp.text.pdf
 Imports iTextSharp.text.pdf.parser
 Imports Microsoft.SmallBasic.Library
@@ -385,11 +387,8 @@ againWithNextLine:
                 Console.WriteLine("points: " & els.rawpos & "  elev: " & els.elevation & "  height:" & els.height)
             Next
 
-            Console.ReadKey()
+            'Console.ReadKey()
         Next
-
-        Dim k = 3
-
 
 
         'Dim m As Match = r.Match(rawtext)
@@ -702,7 +701,91 @@ againWithNextLine:
 
     Sub Main()
         writeHeader()
-        ParsePdfText("testfiles\LO.pdf")
+        For Each file In Directory.GetFiles("aipDocs")
+
+            If file.EndsWith(".pdf") Then
+                ParsePdfText(file)
+            End If
+
+        Next
+
+        createShapefile()
+
     End Sub
+
+    Sub createShapefile()
+        ' create out folder
+        If System.IO.Directory.Exists("\out") = False Then
+            System.IO.Directory.CreateDirectory("\out")
+        End If
+
+        Dim fs As New FeatureSet(FeatureType.Line)
+        fs.DataTable.Columns.Add(New DataColumn("LFNDNR", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("GZ", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("ART", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("OBJNAME", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("BUNDESLAND", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("LAGE", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("H_MAX", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("H_TAL", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("N_BERG", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("ANZ_STUETZ", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("BAHN_LAENG", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("KENNZEICHN", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("DATUM_MELD", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("DATUM_ABBA", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("FARBE", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("STANDORT", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("BEZIRK", Type.GetType("System.String")))
+        fs.DataTable.Columns.Add(New DataColumn("STATUS", Type.GetType("System.String")))
+
+
+
+        Dim id = 0
+
+        For Each cli In resGroups
+            For Each el In cli.element
+                Dim cl As New Coordinate(el.pos.x, el.pos.y)
+
+
+                Dim ffa As IFeature = fs.AddFeature(New Point(cl))
+                ffa.DataRow.AcceptChanges()
+
+                ffa.DataRow("LFNDNR") = id
+                ffa.DataRow("ART") = cli.type
+                ffa.DataRow("OBJNAME") = cli.name
+                ffa.DataRow("H_MAX") = el.height
+                ffa.DataRow("H_TAL") = el.elevation
+                ffa.DataRow("H_MAX") = el.height
+                ffa.DataRow("DATUM_MELD") = "1970-01-01 00:00:00"
+                ffa.DataRow("DATUM_ABBA") = ""
+                ffa.DataRow("STANDORT") = cli.name
+                ffa.DataRow("STATUS") = "n"
+                id += 1
+            Next
+
+        Next
+        fs.SaveAs("out/aipObstacleConverter_acg.shp", True)
+
+        ' write feature code file
+        Dim file As System.IO.StreamWriter
+        file = My.Computer.FileSystem.OpenTextFileWriter("out/featureCodes.txt", False)
+
+
+        file.WriteLine("[Appearance]")
+
+        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=CHIMNEY,300")
+        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=TOWER,311")
+        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=WINDTURBINE,312")
+        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=MAST,313")
+        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,type=CRANE,314")
+        file.WriteLine("[Label]")
+        file.WriteLine("FeatureClass=aipObstacleConverter_acg*,height")
+
+        file.Close()
+
+
+    End Sub
+
 
 End Module
