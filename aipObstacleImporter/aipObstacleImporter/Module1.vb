@@ -492,7 +492,7 @@ againWithNextLine:
         Next
 
         'createShapefile()
-
+        createCsv()
     End Sub
 
     Sub createShapefile()
@@ -574,5 +574,160 @@ againWithNextLine:
 
     End Sub
 
+    Dim outFile = "obstacles_LO.csv"
+    Sub createCsv()
 
+
+
+        Dim ff As New System.IO.StreamWriter(outFile, False)
+        writeHeadline(ff)
+
+        If resGroups Is Nothing Then
+            Console.WriteLine("ERR: export empty!")
+            Return
+        End If
+
+        Dim cn As Long = -1
+        For Each item In resGroups
+            For Each master In item.element
+
+
+                cn += 1
+
+                ' if source is given, replace
+
+                writeLine(ff, cn, 0, item.name, "", item.type, False, False, "M", master.elevation, master.height, master.pos.y, master.pos.x, False, 0, 0, 0, 0, "", "AUSTRIA AIP ENR 5.4")
+
+            Next
+        Next
+
+            ff.Close()
+
+        Console.WriteLine("wrote " & resGroups.Count & " objects")
+
+        If resGroups.Count > 300 Then
+            Console.WriteLine("TASKFINISHED")
+        Else
+            Console.WriteLine("ERR: few objects!")
+        End If
+
+    End Sub
+    Sub writeHeadline(wrt As System.IO.TextWriter)
+        ' headline
+        wrt.WriteLine("codeType;txtName;codeLgt;txtDescrMarking;geoLat;geoLong;valElev;valElevAccuracy;valHgt;codeHgtAccuracy;uomDistVer;valRadius;valRadiusAccuracy;uomRadius;codeGroupId;txtGroupName;locGroupMemberId;locLinkedToGroupMemberId;codeLinkType;datetimeValidWef;datetimeValidTil;txtRmk;source;defaultHeightFlag;codeMarking".Replace(";", seperator))
+    End Sub
+    Dim headerline() As String = Nothing
+    Dim seperator As String = ";"
+    Structure csvStruct
+        Dim codeGroup As String
+        Dim groupInternalId As Long
+        Dim groupDescription As String
+        Dim name As String
+        Dim type As String
+        Dim lighted As Boolean
+        Dim markingDescription As String
+        Dim heightUnit As String
+        Dim heightValue As Long
+        Dim elevationValue As Long
+        Dim latitude As Double
+        Dim longitude As Double
+        Dim defaultHeightFlag As Boolean
+        Dim verticalPrecision As Double
+        Dim lateralPrecision As Double
+        Dim obstacleRadius As Double
+        Dim linkedToGroupInternalId As Long
+        Dim linkType As String
+        Dim validUntil As Date
+        Dim effectiveFrom As Date
+        Dim origin As String
+        Dim _used As Boolean
+    End Structure
+    Sub writeLine(writer As System.IO.StreamWriter, codegroup As String, internalId As String, name As String, groupdescr As String, type As String, lighted As Boolean, marking As Boolean, heightUnit As String, elevationValue As Long, heightValue As Long, latitude As Double, longitude As Double, defaultHeightFlag As Boolean, lateralPrecision As Double, verticalPrecision As Double, obstacleRadius As Double, linkedToGroupInternalId As String, linkType As String, source As String)
+        If groupdescr Is Nothing Then groupdescr = ""
+        If codegroup Is Nothing Then codegroup = ""
+        If internalId Is Nothing Then internalId = ""
+        If name Is Nothing Then name = ""
+        If groupdescr Is Nothing Then groupdescr = ""
+        If type Is Nothing Then type = ""
+        If heightUnit Is Nothing Then heightUnit = ""
+        If linkedToGroupInternalId Is Nothing Then linkedToGroupInternalId = ""
+        If linkType Is Nothing Then linkedToGroupInternalId = ""
+
+        If name = "" Then name = "Cable"
+        If type = "" Then type = "building"
+
+        If type.ToLower.Contains("wind") Then type = "WINDTURBINE"
+
+        If type.ToLower.Contains("antenna") Then type = "ANTENNA"
+
+        If type.ToLower.Contains("mast") Then type = "MAST"
+        If type.ToLower.Contains("plant") Then type = "BUILDING"
+
+        If type <> "WINDTURBINE" And type <> "ANTENNA" And type <> "MAST" And type <> "BUILDING" Then
+            type = "TOWER"
+        End If
+
+
+
+        linkedToGroupInternalId = linkedToGroupInternalId.Replace(seperator, " ")
+        linkType = linkType.Replace(seperator, " ")
+
+
+
+        Dim doublications = codegroup & ";" & internalId
+
+        Dim lineStr = "{codeType}{sepr}{txtName}{sepr}{codeLgt}{sepr}{txtDescrMarking}{sepr}{geoLat}{sepr}{geoLong}{sepr}{valElev}{sepr}{valElevAccuracy}{sepr}{valHgt}{sepr}{codeHgtAccuracy}{sepr}{uomDistVer}{sepr}{valRadius}{sepr}{valRadiusAccuracy}{sepr}{uomRadius}{sepr}{codeGroupId}{sepr}{txtGroupName}{sepr}{locGroupMemberId}{sepr}{locLinkedToGroupMemberId}{sepr}{codeLinkType}{sepr}{datetimeValidWef}{sepr}{datetimeValidTil}{sepr}{txtRmk}{sepr}{source}{sepr}{defaultHeightFlag}{sepr}{codeMarking}"
+
+        lineStr = lineStr.Replace("{sepr}", seperator)
+
+        lineStr = lineStr.Replace("{codeType}", type.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{txtName}", name.Replace(seperator, " "))
+
+
+        Dim defHeight = "N"
+
+        If defaultHeightFlag = True Then
+            defHeight = "Y"
+        Else
+            If heightValue = 0 Then
+                defHeight = "Y"
+
+                heightUnit = "m"
+            End If
+        End If
+
+
+        Dim codeLGT = "N"
+        If lighted Then codeLGT = "Y"
+        lineStr = lineStr.Replace("{codeLgt}", codeLGT.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{txtDescrMarking}", "".Replace(seperator, " "))
+        lineStr = lineStr.Replace("{geoLat}", latitude.ToString.Replace(",", ".").Replace(seperator, " "))
+        lineStr = lineStr.Replace("{geoLong}", longitude.ToString.Replace(",", ".").Replace(seperator, " "))
+        lineStr = lineStr.Replace("{valElev}", elevationValue.ToString.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{valElevAccuracy}", "0".Replace(seperator, " "))
+        lineStr = lineStr.Replace("{valHgt}", heightValue.ToString.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{codeHgtAccuracy}", "0".Replace(seperator, " "))
+        lineStr = lineStr.Replace("{uomDistVer}", heightUnit.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{valRadius}", 0)
+        lineStr = lineStr.Replace("{valRadiusAccuracy}", lateralPrecision.ToString.Replace(",", ".").Replace(seperator, " "))
+        lineStr = lineStr.Replace("{uomRadius}", heightUnit.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{codeGroupId}", codegroup.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{txtGroupName}", groupdescr.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{locGroupMemberId}", internalId.ToString.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{locLinkedToGroupMemberId}", linkedToGroupInternalId.ToString.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{codeLinkType}", linkType.Replace(seperator, " "))
+        lineStr = lineStr.Replace("{datetimeValidWef}", "")
+        lineStr = lineStr.Replace("{datetimeValidTil}", "")
+        lineStr = lineStr.Replace("{txtRmk}", "")
+        lineStr = lineStr.Replace("{source}", source.Replace(seperator, " "))
+
+        lineStr = lineStr.Replace("{defaultHeightFlag}", defHeight.ToString.Replace(",", ".").Replace(seperator, " "))
+        lineStr = lineStr.Replace("{codeMarking}", "N".Replace(seperator, " "))
+
+        ' final syntax check
+        If lineStr.Contains("{") = False And lineStr.Contains("}") = False Then
+
+            writer.WriteLine(lineStr)
+        End If
+    End Sub
 End Module
