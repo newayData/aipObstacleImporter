@@ -574,10 +574,11 @@ againWithNextLine:
 
     End Sub
 
-    Dim outFile = "obstacles_LO.csv"
+    Dim outFile = "out/obstacles_LO.csv"
     Sub createCsv()
 
 
+        If System.IO.Directory.Exists("out") = False Then System.IO.Directory.CreateDirectory("out")
 
         Dim ff As New System.IO.StreamWriter(outFile, False)
         writeHeadline(ff)
