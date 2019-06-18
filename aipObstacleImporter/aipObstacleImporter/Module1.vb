@@ -618,7 +618,7 @@ againWithNextLine:
         wrt.WriteLine("codeType;txtName;codeLgt;txtDescrMarking;geoLat;geoLong;valElev;valGeoAccuracy;valHgt;codeHgtAccuracy;uomDistVer;valRadius;valRadiusAccuracy;uomRadius;codeGroupId;txtGroupName;locGroupMemberId;locLinkedToGroupMemberId;codeLinkType;datetimeValidWef;datetimeValidTil;txtRmk;source;defaultHeightFlag;codeMarking".Replace(";", seperator))
     End Sub
     Dim headerline() As String = Nothing
-    Dim seperator As String = ";"
+    Dim seperator As String = ","
     Structure csvStruct
         Dim codeGroup As String
         Dim groupInternalId As Long
