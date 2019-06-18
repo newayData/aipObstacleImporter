@@ -615,7 +615,7 @@ againWithNextLine:
     End Sub
     Sub writeHeadline(wrt As System.IO.TextWriter)
         ' headline
-        wrt.WriteLine("codeType;txtName;codeLgt;txtDescrMarking;geoLat;geoLong;valElev;valElevAccuracy;valHgt;codeHgtAccuracy;uomDistVer;valRadius;valRadiusAccuracy;uomRadius;codeGroupId;txtGroupName;locGroupMemberId;locLinkedToGroupMemberId;codeLinkType;datetimeValidWef;datetimeValidTil;txtRmk;source;defaultHeightFlag;codeMarking".Replace(";", seperator))
+        wrt.WriteLine("codeType;txtName;codeLgt;txtDescrMarking;geoLat;geoLong;valElev;valGeoAccuracy;valHgt;codeHgtAccuracy;uomDistVer;valRadius;valRadiusAccuracy;uomRadius;codeGroupId;txtGroupName;locGroupMemberId;locLinkedToGroupMemberId;codeLinkType;datetimeValidWef;datetimeValidTil;txtRmk;source;defaultHeightFlag;codeMarking".Replace(";", seperator))
     End Sub
     Dim headerline() As String = Nothing
     Dim seperator As String = ";"
