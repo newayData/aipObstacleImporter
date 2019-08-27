@@ -191,10 +191,6 @@ Module Module1
                 ' elevation  / height
                 ' ========================
 
-                If name.Contains("Gössnitzalmen") Then
-                    Dim kdsfs = 3
-                End If
-
 
 
                 Dim elementSplitPost = (cline).ToString.Split(" ")
@@ -589,20 +585,35 @@ againWithNextLine:
         End If
 
         Dim cn As Long = -1
+
+
+
+        Dim ssp As Long = -1
         For Each item In resGroups
+            ssp = 0
             For Each master In item.element
 
-
+                ssp += 1
                 cn += 1
 
                 ' if source is given, replace
+                Dim linktype As String = "GROUP"
 
-                writeLine(ff, cn, 0, item.name, "", item.type, False, False, "M", master.elevation, master.height, master.pos.y, master.pos.x, False, 0, 0, 0, 0, "", "AUSTRIA AIP ENR 5.4")
+                If item.name.ToLower.Contains("seilbahn") Then
+                    linktype = "CABLE"
+
+                End If
+
+                If item.name.Contains("Hausalm/Plöckenpass - Kleiner Pal Seilbahn / Cableway") Then
+                    Dim kkk = 3
+                End If
+
+                writeLine(ff, cn, ssp, item.name, "", item.type, False, False, "M", master.elevation, master.height, master.pos.y, master.pos.x, False, 0, 0, 0, ssp + 1, linktype, "AUSTRIA AIP ENR 5.4")
 
             Next
         Next
 
-            ff.Close()
+        ff.Close()
 
         Console.WriteLine("wrote " & resGroups.Count & " objects")
 
@@ -669,6 +680,10 @@ againWithNextLine:
         End If
 
 
+        If name.ToLower.Contains("seilbahn") Or name.ToLower.Contains("material") Or name.ToLower.Contains("leitung") Then
+            linkType = "CABLE"
+            type = "BUILDING"
+        End If
 
         linkedToGroupInternalId = linkedToGroupInternalId.Replace(seperator, " ")
         linkType = linkType.Replace(seperator, " ")
