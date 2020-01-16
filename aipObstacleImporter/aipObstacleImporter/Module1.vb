@@ -444,9 +444,7 @@ Module Module1
     Dim outfile = "out\obstacles_ED.csv"
     Sub createCsv()
 
-
-
-        Dim ff As New System.IO.StreamWriter(outFile, False)
+        Dim ff As New System.IO.StreamWriter(outfile, False)
         writeHeadline(ff)
 
         If parseResult Is Nothing Then
@@ -569,7 +567,7 @@ Module Module1
         lineStr = lineStr.Replace("{valElev}", elevationValue.ToString.Replace(seperator, " "))
         lineStr = lineStr.Replace("{valElevAccuracy}", "0".Replace(seperator, " "))
         lineStr = lineStr.Replace("{valHgt}", heightValue.ToString.Replace(seperator, " "))
-        lineStr = lineStr.Replace("{codeHgtAccuracy}", "0".Replace(seperator, " "))
+        lineStr = lineStr.Replace("{codeHgtAccuracy}", "1".Replace(seperator, " "))
         lineStr = lineStr.Replace("{uomDistVer}", heightUnit.Replace(seperator, " "))
         lineStr = lineStr.Replace("{valRadius}", 0)
         lineStr = lineStr.Replace("{valRadiusAccuracy}", lateralPrecision.ToString.Replace(",", ".").Replace(seperator, " "))
