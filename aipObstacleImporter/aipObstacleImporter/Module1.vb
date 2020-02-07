@@ -191,6 +191,8 @@ Module Module1
                 ' elevation  / height
                 ' ========================
 
+                cline = cline.Replace("*", "")
+
 
 
                 Dim elementSplitPost = (cline).ToString.Split(" ")
@@ -487,7 +489,7 @@ againWithNextLine:
 
         Next
 
-        'createShapefile()
+        createShapefile()
         createCsv()
     End Sub
 
@@ -502,7 +504,7 @@ againWithNextLine:
 
         fs.DataTable.Columns.Add(New DataColumn("TYPE", Type.GetType("System.String")))
         fs.DataTable.Columns.Add(New DataColumn("NAME", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("HEIGHT", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("HEIGHT", Type.GetType("System.String")))
         fs.DataTable.Columns.Add(New DataColumn("ELEVATION", Type.GetType("System.Int32")))
 
 
@@ -540,7 +542,7 @@ againWithNextLine:
 
                 ffa.DataRow("ID") = id
                 ffa.DataRow("TYPE") = casetType
-                ffa.DataRow("HEIGHT") = el.height
+                ffa.DataRow("HEIGHT") = (Math.Round((el.height + el.elevation) / 10) * 10) + "'"
                 ffa.DataRow("ELEVATION") = el.elevation
                 ffa.DataRow("NAME") = cli.name
 
@@ -722,7 +724,7 @@ againWithNextLine:
         lineStr = lineStr.Replace("{valElev}", elevationValue.ToString.Replace(seperator, " "))
         lineStr = lineStr.Replace("{valElevAccuracy}", "0".Replace(seperator, " "))
         lineStr = lineStr.Replace("{valHgt}", heightValue.ToString.Replace(seperator, " "))
-        lineStr = lineStr.Replace("{codeHgtAccuracy}", "0".Replace(seperator, " "))
+        lineStr = lineStr.Replace("{codeHgtAccuracy}", "1".Replace(seperator, " "))
         lineStr = lineStr.Replace("{uomDistVer}", heightUnit.Replace(seperator, " "))
         lineStr = lineStr.Replace("{valRadius}", 0)
         lineStr = lineStr.Replace("{valRadiusAccuracy}", lateralPrecision.ToString.Replace(",", ".").Replace(seperator, " "))
