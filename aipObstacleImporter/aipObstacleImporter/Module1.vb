@@ -351,7 +351,7 @@ Module Module1
 
             Next fileName
 
-            ' createShapefile() this feature is disabled for the time being
+            createShapefile()
             createCsv()
 
         Catch ex As Exception
@@ -373,7 +373,7 @@ Module Module1
 
         fs.DataTable.Columns.Add(New DataColumn("TYPE", Type.GetType("System.String")))
         fs.DataTable.Columns.Add(New DataColumn("NAME", Type.GetType("System.String")))
-        fs.DataTable.Columns.Add(New DataColumn("HEIGHT", Type.GetType("System.Int32")))
+        fs.DataTable.Columns.Add(New DataColumn("HEIGHT", Type.GetType("System.String")))
         fs.DataTable.Columns.Add(New DataColumn("ELEVATION", Type.GetType("System.Int32")))
 
 
@@ -411,7 +411,7 @@ Module Module1
 
             ffa.DataRow("ID") = id
             ffa.DataRow("TYPE") = casetType
-            ffa.DataRow("HEIGHT") = cli.height
+            ffa.DataRow("HEIGHT") = Math.Round((cli.height + cli.elevation) / 10) * 10 + "'"
             ffa.DataRow("ELEVATION") = cli.elevation
             ffa.DataRow("NAME") = cli.name
 
