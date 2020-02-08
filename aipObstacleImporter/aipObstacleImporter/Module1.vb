@@ -539,10 +539,12 @@ againWithNextLine:
                     End If
                 End If
 
+                Dim hVal As String = (Math.Round((el.height) / 10) * 10) + " AGL"
+                If hVal = "0 AGL" Then hVal = ""
 
                 ffa.DataRow("ID") = id
                 ffa.DataRow("TYPE") = casetType
-                ffa.DataRow("HEIGHT") = (Math.Round((el.height + el.elevation) / 10) * 10) + "'"
+                ffa.DataRow("HEIGHT") = hVal
                 ffa.DataRow("ELEVATION") = el.elevation
                 ffa.DataRow("NAME") = cli.name
 
