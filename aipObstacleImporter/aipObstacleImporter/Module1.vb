@@ -545,7 +545,7 @@ againWithNextLine:
                 ffa.DataRow("ID") = id
                 ffa.DataRow("TYPE") = casetType
                 ffa.DataRow("HEIGHT") = hVal
-                ffa.DataRow("ELEVATION") = el.elevation
+                ffa.DataRow("ELEVATION") = el.elevation - hVal
                 ffa.DataRow("NAME") = cli.name
 
                 id += 1
