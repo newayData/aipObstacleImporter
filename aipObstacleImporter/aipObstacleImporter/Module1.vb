@@ -264,7 +264,7 @@ Module Module1
             newObs.lat = latitude
             newObs.lon = longitude
             newObs.height = height
-            newObs.elevation = elevation
+            newObs.elevation = elevation - height
             newObs.marked = marked
             newObs.lighted = lighted
             parseResult.Add(newObs)
