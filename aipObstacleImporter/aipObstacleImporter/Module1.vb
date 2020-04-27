@@ -539,13 +539,21 @@ againWithNextLine:
                     End If
                 End If
 
-                Dim hVal As String = (Math.Round((el.height) / 10) * 10) + " AGL"
+                Dim hVal As String = (Math.Round((el.height) / 10) * 10)
                 If hVal = "0 AGL" Then hVal = ""
+                Dim elev As Long = el.elevation
+                Try
+                    elev = el.elevation - hVal
+                Catch ex As Exception
+                    Console.WriteLine("ERR: cant calc elevation! " & ex.Message)
+                End Try
+
+                hVal = hVal & " AGL"
 
                 ffa.DataRow("ID") = id
                 ffa.DataRow("TYPE") = casetType
                 ffa.DataRow("HEIGHT") = hVal
-                ffa.DataRow("ELEVATION") = el.elevation - hVal
+                ffa.DataRow("ELEVATION") = elev
                 ffa.DataRow("NAME") = cli.name
 
                 id += 1
