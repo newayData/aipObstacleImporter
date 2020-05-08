@@ -53,6 +53,8 @@ Module Module1
         Return sb.ToString()
     End Function
 
+
+
     Structure obstStruct
         Dim pos As DoublePointStruct
         Dim rawpos As String
