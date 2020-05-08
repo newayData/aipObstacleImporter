@@ -53,8 +53,6 @@ Module Module1
         Return sb.ToString()
     End Function
 
-
-
     Structure obstStruct
         Dim pos As DoublePointStruct
         Dim rawpos As String
@@ -83,7 +81,6 @@ Module Module1
             Dim a As String
 
             Do
-
                 a = reader.ReadLine
 
                 If ignore_lst.Contains(a) = False And a <> "" Then ignore_lst.Add(a)
@@ -91,7 +88,6 @@ Module Module1
 
             reader.Close()
         Catch
-
         End Try
 
         Dim textLine = rawtext.Split(vbLf)
@@ -99,28 +95,20 @@ Module Module1
         ' sweden special garbage remove
         Dim outText As New List(Of String)
         For i As Short = 0 To textLine.Length - 1
-
-            Dim str = Regex.Replace(textLine(i), "[0-9][0-9]N[ ][0-9][0-9][E]", "")
+            Dim str = textLine(i)
 
             ' check if coordinates are in the line
 
-            If Regex.Match(str, "[0-5][0-9][0-5][0-9][0-5][0-9].[0-9]N  [0][0-5][0-9][0-5][0-9][0-5][0-9].[0-9]E").Success Then
+            If Regex.Match(str, "[0-5][0-9] [0-5][0-9] [0-5][0-9]N 0[0-5][0-9] [0-5][0-9] [0-5][0-9]E").Success Then
 
-                If str.Contains(" (*) ") Then
-                    str = str.Replace(" (*) ", " ")
+                If str.Contains(" * ") Then
+                    str = str.Replace(" * ", " ")
                 End If
-
-
 
                 outText.Add(str)
-                End If
-
-
+            End If
         Next
         textLine = outText.ToArray
-
-
-
 
         Dim obstacleGroup As New groupStruct
         obstacleGroup.element = New List(Of obstStruct)
@@ -128,30 +116,23 @@ Module Module1
         Dim coordPairs_lst As New List(Of String)
         Dim elevation As Double = 0
         Dim height As Double = 0
-
-        Dim oldStat As String = "newItem"
         Dim clineCnt As Short = 0
-        Dim nextline As String = ""
+
+        Dim name As String = ""
+        Dim type As String = ""
         For Each cline In textLine
-            Dim pattern As String = "[0-5][0-9][0-5][0-9][0-5][0-9].[0-9]N  [0][0-5][0-9][0-5][0-9][0-5][0-9].[0-9]E"
+            Dim pattern As String = "[0-5][0-9] [0-5][0-9] [0-5][0-9]N 0[0-5][0-9] [0-5][0-9] [0-5][0-9]E"
 
             Try
-
-
 
                 ' Instantiate the regular expression object.
                 Dim r As Regex = New Regex(pattern, RegexOptions.IgnoreCase)
                 Dim m As Match = r.Match(cline)
 
-            
-                Dim name As String = ""
-                Dim type As String = ""
-
                 Dim lighttype As String = ""
 
 
                 m = r.Match(cline)
-
 
                 lighttype = Regex.Match(cline, "F[A-Z ]{0,4}R").Value
                 Dim ob As New obstStruct
@@ -163,20 +144,20 @@ Module Module1
 
                 Dim rightClip As String = cline.Split("$")(1)
                 Dim leftClip As String = cline.Split("$")(0)
-                name = leftClip
+
+
+                If leftClip <> "" Then name = leftClip ' to group the name as not every line has designators
 
                 Try
                     Dim sps = rightClip.Split({" "}, StringSplitOptions.RemoveEmptyEntries)
 
                     height = sps(0)
                     elevation = sps(1)
-                    type = rightClip.Replace(height, "").Replace(elevation, "")
+                    type = name
                 Catch ex As Exception
-
                 End Try
 
-
-                ob.elevation = elevation
+                ob.elevation = elevation - height
                 ob.height = height
                 ob.lightcode = lighttype
                 ob.rawpos = m.Value
@@ -185,22 +166,13 @@ Module Module1
 
                 obstacleGroup.element.Add(ob)
 
-
                 Console.Write(".")
             Catch ex As Exception
-
+                Console.WriteLine("ERR: " & ex.Message)
             End Try
         Next
 
-
-
-
         resGroups.Add(obstacleGroup)
-
-
-
-
-
 
         Return Nothing
 
@@ -227,12 +199,12 @@ Module Module1
             Dim sp = str.Split(" ")
 
             Dim degLat As Short = str.Substring(0, 2)
-            Dim minLat As Short = str.Substring(2, 2)
-            Dim secLat As Double = str.Substring(4, 4).Replace(".", decimalSeparator)
+            Dim minLat As Short = str.Substring(3, 2)
+            Dim secLat As Double = str.Substring(6, 2).Replace(".", decimalSeparator)
 
-            Dim degLon As Short = str.Substring(11, 3)
+            Dim degLon As Short = str.Substring(10, 3)
             Dim minLon As Short = str.Substring(14, 2)
-            Dim secLon As Double = str.Substring(16, 4).Replace(".", decimalSeparator)
+            Dim secLon As Double = str.Substring(17, 2).Replace(".", decimalSeparator)
 
 
             retC.y = degLat + minLat / 60 + secLat / 3600
@@ -256,12 +228,12 @@ Module Module1
 
         Next
 
-        'createShapefile()
+ 
         createCsv()
     End Sub
 
 
-    Dim outFile = "out/obstacles_ES.csv"
+    Dim outFile = "out/obstacles_EK.csv"
     Sub createCsv()
 
 
@@ -292,7 +264,7 @@ Module Module1
 
 
 
-                writeLine(ff, cn, ssp, master.name, "", master.type, master.lightcode <> "?", False, "FT", master.elevation, master.height, master.pos.y, master.pos.x, False, 0, 0, 0, ssp + 1, linktype, "AIP Sweden ENR 5.4")
+                writeLine(ff, cn, ssp, master.name, "", master.type, master.lightcode <> "?", False, "FT", master.elevation, master.height, master.pos.y, master.pos.x, False, 0, 0, 0, ssp + 1, linktype, "AIP Denmark ENR 5.4")
 
             Next
         Next
