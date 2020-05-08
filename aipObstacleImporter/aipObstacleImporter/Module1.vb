@@ -113,7 +113,7 @@ Module Module1
 
 
                 outText.Add(str)
-                End If
+            End If
 
 
         Next
@@ -143,7 +143,7 @@ Module Module1
                 Dim r As Regex = New Regex(pattern, RegexOptions.IgnoreCase)
                 Dim m As Match = r.Match(cline)
 
-            
+
                 Dim name As String = ""
                 Dim type As String = ""
 
@@ -176,7 +176,7 @@ Module Module1
                 End Try
 
 
-                ob.elevation = elevation
+                ob.elevation = elevation - height
                 ob.height = height
                 ob.lightcode = lighttype
                 ob.rawpos = m.Value
