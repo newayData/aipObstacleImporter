@@ -606,23 +606,25 @@ againWithNextLine:
             For Each master In item.element
 
                 ssp += 1
-                cn += 1
+
+                If item.name.Contains("Windpark Handalm, Osterwitz Wind") Then
+                    Dim k = 3
+                End If
 
                 ' if source is given, replace
                 Dim linktype As String = "GROUP"
 
                 If item.name.ToLower.Contains("seilbahn") Then
                     linktype = "CABLE"
-
+                Else
+                    ssp = 0
                 End If
 
-                If item.name.Contains("Hausalm/Plöckenpass - Kleiner Pal Seilbahn / Cableway") Then
-                    Dim kkk = 3
-                End If
 
                 writeLine(ff, cn, ssp, item.name, "", item.type, False, False, "M", master.elevation, master.height, master.pos.y, master.pos.x, False, 0, 0, 0, ssp + 1, linktype, "AUSTRIA AIP ENR 5.4")
 
             Next
+            cn += 1
         Next
 
         ff.Close()
@@ -641,7 +643,7 @@ againWithNextLine:
         wrt.WriteLine("codeType;txtName;codeLgt;txtDescrMarking;geoLat;geoLong;valElev;valGeoAccuracy;valHgt;codeHgtAccuracy;uomDistVer;valRadius;valRadiusAccuracy;uomRadius;codeGroupId;txtGroupName;locGroupMemberId;locLinkedToGroupMemberId;codeLinkType;datetimeValidWef;datetimeValidTil;txtRmk;source;defaultHeightFlag;codeMarking".Replace(";", seperator))
     End Sub
     Dim headerline() As String = Nothing
-    Dim seperator As String = ","
+    Dim seperator As String = ";"
     Structure csvStruct
         Dim codeGroup As String
         Dim groupInternalId As Long
